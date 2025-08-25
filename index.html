@@ -40,19 +40,120 @@
         
         #intro-video {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            min-width: 100vw;
-            min-height: 100vh;
-            width: auto;
-            height: auto;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             object-fit: cover;
+            object-position: center center;
             pointer-events: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            background: #000;
+        }
+        
+        /* تحسينات خاصة بكل جهاز */
+        
+        /* الكمبيوتر العادي */
+        @media screen and (min-width: 1024px) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+            }
+        }
+        
+        /* التابلت عمودي */
+        @media screen and (max-width: 1023px) and (min-width: 768px) and (orientation: portrait) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+        
+        /* التابلت أفقي */
+        @media screen and (max-width: 1023px) and (min-width: 768px) and (orientation: landscape) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+            }
+        }
+        
+        /* الموبايل عمودي */
+        @media screen and (max-width: 767px) and (orientation: portrait) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+        
+        /* الموبايل أفقي */
+        @media screen and (max-width: 767px) and (orientation: landscape) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+        
+        /* iPhone X وما بعده (notch) */
+        @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+        
+        /* iPhone Plus */
+        @media screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+            }
+        }
+        
+        /* iPad */
+        @media screen and (device-width: 768px) and (device-height: 1024px) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+            }
+        }
+        
+        /* iPad Pro */
+        @media screen and (device-width: 1024px) and (device-height: 1366px) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+            }
+        }
+        
+        /* الشاشات العريضة جداً */
+        @media screen and (min-aspect-ratio: 21/9) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+        
+        /* الشاشات الطويلة جداً */
+        @media screen and (max-aspect-ratio: 9/16) {
+            #intro-video {
+                object-fit: cover;
+                object-position: center center;
+                width: 100vw;
+                height: 100vh;
+            }
         }
         
         /* رسالة التحميل */
@@ -374,10 +475,63 @@
                     introVideo.setAttribute('x5-video-player-type', 'h5');
                 }
                 
+                // ضبط قياسات الفيديو حسب الجهاز
+                adjustVideoForDevice();
+                
                 // منع الضغط والسحب
                 introVideo.addEventListener('contextmenu', preventDefault);
                 introVideo.addEventListener('dragstart', preventDefault);
                 introVideo.addEventListener('selectstart', preventDefault);
+            }
+            
+            function adjustVideoForDevice() {
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                const aspectRatio = screenWidth / screenHeight;
+                
+                // حساب نوع الشاشة
+                if (screenWidth <= 480) {
+                    // موبايل صغير
+                    introVideo.style.objectPosition = 'center center';
+                    introVideo.style.objectFit = 'cover';
+                } else if (screenWidth <= 768) {
+                    // موبايل كبير / تابلت صغير
+                    introVideo.style.objectPosition = 'center center';
+                    introVideo.style.objectFit = 'cover';
+                } else if (screenWidth <= 1024) {
+                    // تابلت
+                    introVideo.style.objectPosition = 'center center';
+                    introVideo.style.objectFit = 'cover';
+                } else {
+                    // كمبيوتر
+                    introVideo.style.objectPosition = 'center center';
+                    introVideo.style.objectFit = 'cover';
+                }
+                
+                // ضبط حسب نسبة العرض للارتفاع
+                if (aspectRatio > 2.1) {
+                    // شاشة عريضة جداً (21:9 أو أكثر)
+                    introVideo.style.objectFit = 'cover';
+                    introVideo.style.objectPosition = 'center center';
+                } else if (aspectRatio < 0.6) {
+                    // شاشة طويلة جداً (أطول من 9:16)
+                    introVideo.style.objectFit = 'cover';
+                    introVideo.style.objectPosition = 'center center';
+                }
+                
+                // تحسينات خاصة للأجهزة المحددة
+                if (isIPhone()) {
+                    introVideo.style.objectFit = 'cover';
+                    introVideo.style.width = '100vw';
+                    introVideo.style.height = '100vh';
+                } else if (isIPad()) {
+                    introVideo.style.objectFit = 'cover';
+                    introVideo.style.objectPosition = 'center center';
+                } else if (isAndroid()) {
+                    introVideo.style.objectFit = 'cover';
+                    introVideo.style.width = '100vw';
+                    introVideo.style.height = '100vh';
+                }
             }
             
             function hideLoading() {
@@ -479,8 +633,93 @@
             return /iPad|iPhone|iPod/.test(navigator.userAgent);
         }
         
+        function isIPhone() {
+            return /iPhone/.test(navigator.userAgent);
+        }
+        
+        function isIPad() {
+            return /iPad/.test(navigator.userAgent);
+        }
+        
         function isAndroid() {
             return /Android/.test(navigator.userAgent);
+        }
+        
+        // ضبط الفيديو عند تغيير اتجاه الشاشة
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                const introVideo = document.getElementById('intro-video');
+                if (introVideo && !document.getElementById('main-site').classList.contains('show')) {
+                    adjustVideoForDevice();
+                }
+            }, 100);
+        });
+        
+        // ضبط الفيديو عند تغيير حجم النافذة
+        window.addEventListener('resize', function() {
+            const introVideo = document.getElementById('intro-video');
+            if (introVideo && !document.getElementById('main-site').classList.contains('show')) {
+                adjustVideoForDevice();
+            }
+        });
+        
+        // دالة مساعدة لضبط الفيديو (خارج الـ DOMContentLoaded)
+        function adjustVideoForDevice() {
+            const introVideo = document.getElementById('intro-video');
+            if (!introVideo) return;
+            
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const aspectRatio = screenWidth / screenHeight;
+            
+            // إعادة تعيين القيم الأساسية
+            introVideo.style.position = 'absolute';
+            introVideo.style.top = '0';
+            introVideo.style.left = '0';
+            introVideo.style.width = '100vw';
+            introVideo.style.height = '100vh';
+            introVideo.style.objectFit = 'cover';
+            introVideo.style.objectPosition = 'center center';
+            
+            // تحسينات خاصة حسب نوع الجهاز
+            if (/iPhone/.test(navigator.userAgent)) {
+                // iPhone
+                if (aspectRatio > 0.5 && aspectRatio < 0.6) {
+                    // iPhone X وما بعده (notch phones)
+                    introVideo.style.objectFit = 'cover';
+                } else {
+                    // iPhone عادي
+                    introVideo.style.objectFit = 'cover';
+                }
+            } else if (/iPad/.test(navigator.userAgent)) {
+                // iPad
+                introVideo.style.objectFit = 'cover';
+                introVideo.style.objectPosition = 'center center';
+            } else if (/Android/.test(navigator.userAgent)) {
+                // Android
+                if (screenWidth <= 480) {
+                    // أندرويد صغير
+                    introVideo.style.objectFit = 'cover';
+                } else {
+                    // أندرويد كبير/تابلت
+                    introVideo.style.objectFit = 'cover';
+                }
+            } else {
+                // Desktop
+                introVideo.style.objectFit = 'cover';
+                introVideo.style.objectPosition = 'center center';
+            }
+            
+            // تحسينات حسب نسبة العرض للارتفاع
+            if (aspectRatio > 2) {
+                // شاشة عريضة جداً
+                introVideo.style.objectFit = 'cover';
+                introVideo.style.objectPosition = 'center center';
+            } else if (aspectRatio < 0.5) {
+                // شاشة طويلة جداً
+                introVideo.style.objectFit = 'cover';
+                introVideo.style.objectPosition = 'center center';
+            }
         }
         
         // وظيفة الزر التفاعلي
