@@ -387,15 +387,15 @@
             <h1>مرحباً بك في موقعي</h1>
             
             <div class="welcome-text">
-                <p>🎉 أهلاً وسهلاً! نورت الموقع 🎉</p>
+                <p id="device-message">🎉 أهلاً وسهلاً! نورت الموقع 🎉</p>
             </div>
             
             <div class="content-box">
                 <div class="content-text">
                     <p>✨ مرحباً بك في تجربة رائعة ومميزة</p>
-                    <p>📱 الموقع يعمل على جميع الأجهزة بسلاسة</p>
+                    <p id="device-status">🔍 جاري تحديد نوع الجهاز...</p>
                     <p>🚀 تصميم متجاوب وعصري</p>
-                    <p>🎬 الانترو اكتمل بنجاح!</p>
+                    <p id="intro-status">⭐ حالة الانترو: جاري التحديد</p>
                 </div>
                 
                 <button class="button" onclick="showMessage()">
@@ -416,12 +416,17 @@
             const mainSite = document.getElementById('main-site');
             const loadingOverlay = document.getElementById('loading-overlay');
             
-            // تحسين الأداء للموبايل
+            // فحص إذا كان الجهاز موبايل - إذا كان كده ادخل على الموقع مباشرة
             if (isMobile()) {
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
-                document.body.style.height = '100%';
+                console.log('جهاز موبايل تم اكتشافه - تخطي الفيديو');
+                showMainSite();
+                return; // إيقاف باقي الكود
             }
+            
+            // إذا كان كمبيوتر أو تابلت، كمل باقي الكود
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
             
             // إعدادات الفيديو المتقدمة
             setupVideo();
@@ -586,6 +591,25 @@
             }
             
             function showMainSite() {
+                // رسالة حسب نوع الجهاز
+                const deviceMsg = document.getElementById('device-message');
+                const deviceStatus = document.getElementById('device-status');
+                const introStatus = document.getElementById('intro-status');
+                
+                if (isMobile()) {
+                    deviceMsg.textContent = '📱 مرحباً من الهاتف! تم تخطي الانترو تلقائياً';
+                    deviceStatus.textContent = '📱 تم اكتشاف: هاتف ذكي';
+                    introStatus.textContent = '⚡ حالة الانترو: تم تخطيه (هاتف)';
+                } else if (isTablet()) {
+                    deviceMsg.textContent = '📺 مرحباً من التابلت! الانترو انتهى بنجاح';
+                    deviceStatus.textContent = '📺 تم اكتشاف: جهاز تابلت';
+                    introStatus.textContent = '✅ حالة الانترو: تم تشغيله بنجاح';
+                } else {
+                    deviceMsg.textContent = '💻 مرحباً من الكمبيوتر! الانترو انتهى بنجاح';
+                    deviceStatus.textContent = '💻 تم اكتشاف: جهاز كمبيوتر';
+                    introStatus.textContent = '✅ حالة الانترو: تم تشغيله بنجاح';
+                }
+                
                 // تحرير الـ body للسكرول
                 document.body.style.position = '';
                 document.body.style.overflow = 'auto';
@@ -626,7 +650,37 @@
         
         // وظائف كشف نوع الجهاز
         function isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            // فحص شامل لجميع أنواع الهواتف
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // فحص الهواتف الذكية
+            if (/android/i.test(userAgent)) {
+                return true; // جميع هواتف الأندرويد
+            }
+            
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                return true; // جميع أجهزة أبل الموبايل
+            }
+            
+            // فحص هواتف أخرى
+            if (/windows phone/i.test(userAgent)) {
+                return true; // ويندوز فون
+            }
+            
+            if (/blackberry/i.test(userAgent)) {
+                return true; // بلاك بيري
+            }
+            
+            if (/webos|opera mini|iemobile/i.test(userAgent)) {
+                return true; // هواتف أخرى
+            }
+            
+            // فحص عرض الشاشة (إضافي للأمان)
+            if (window.innerWidth <= 768 && 'ontouchstart' in window) {
+                return true; // أي جهاز لمسي صغير
+            }
+            
+            return false; // ليس موبايل
         }
         
         function isIOS() {
@@ -638,11 +692,39 @@
         }
         
         function isIPad() {
+            // التعامل مع الآيباد كتابلت وليس موبايل
             return /iPad/.test(navigator.userAgent);
         }
         
         function isAndroid() {
             return /Android/.test(navigator.userAgent);
+        }
+        
+        function isTablet() {
+            // تحديد التابلت (هيشغل الفيديو)
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // iPad
+            if (/iPad/.test(userAgent)) {
+                return true;
+            }
+            
+            // Android tablets (شاشة أكبر من 7 بوصة)
+            if (/Android/.test(userAgent) && !/Mobile/.test(userAgent)) {
+                return true;
+            }
+            
+            // Surface tablets
+            if (/Windows NT/.test(userAgent) && /Touch/.test(userAgent)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function isDesktop() {
+            // كمبيوتر عادي (هيشغل الفيديو)
+            return !isMobile() && !isTablet();
         }
         
         // ضبط الفيديو عند تغيير اتجاه الشاشة
