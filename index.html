@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>موقع مع انترو فيديو</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        /* شاشة الانترو */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        #intro-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100vw;
+            min-height: 100vh;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            pointer-events: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* رسالة التحميل */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-content {
+            text-align: center;
+            color: white;
+            font-size: clamp(1.2rem, 5vw, 2rem);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* الموقع الأساسي */
+        #main-site {
+            opacity: 0;
+            visibility: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            transition: all 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        #main-site.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 90%;
+            width: 100%;
+            animation: slideIn 1s ease-out;
+        }
+        
+        h1 {
+            color: white;
+            font-size: clamp(2rem, 8vw, 4rem);
+            margin-bottom: clamp(20px, 5vh, 40px);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .welcome-text {
+            color: white;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            margin-bottom: clamp(20px, 5vh, 40px);
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+        
+        .content-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: clamp(15px, 3vw, 25px);
+            padding: clamp(20px, 5vw, 40px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            animation: fadeInUp 1s ease-out 0.6s both;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        
+        .content-text {
+            color: white;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            line-height: 1.8;
+            margin-bottom: clamp(20px, 5vh, 30px);
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: clamp(12px, 3vw, 15px) clamp(20px, 5vw, 30px);
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            touch-action: manipulation;
+        }
+        
+        .button:hover, .button:active {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+        }
+        
+        /* الأنيميشن */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* فيد أوت للانترو */
+        .fade-out {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* تحسينات الموبايل */
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .content-box {
+                margin: 10px;
+            }
+        }
+        
+        @media screen and (max-height: 600px) and (orientation: landscape) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                margin-bottom: 15px;
+            }
+            
+            .welcome-text {
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* منع التكبير في iOS */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            select, textarea, input[type="text"], input[type="password"], 
+            input[type="datetime"], input[type="datetime-local"], 
+            input[type="date"], input[type="month"], input[type="time"], 
+            input[type="week"], input[type="number"], input[type="email"], 
+            input[type="url"] {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* إخفاء scrollbar في الموبايل */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* دعم RTL بشكل أفضل */
+        [dir="rtl"] .content-text {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة الانترو -->
+    <div id="intro-screen">
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>جاري التحميل...</p>
+                <p style="font-size: 0.8em; margin-top: 10px; opacity: 0.8;">يرجى الانتظار</p>
+            </div>
+        </div>
+        <video 
+            id="intro-video"
+            muted
+            preload="auto"
+            playsinline
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="false"
+        >
+            <source src="intro.mp4" type="video/mp4">
+            <source src="intro.webm" type="video/webm">
+            <source src="intro.mov" type="video/quicktime">
+            متصفحك لا يدعم تشغيل الفيديو
+        </video>
+    </div>
+
+    <!-- الموقع الأساسي -->
+    <div id="main-site">
+        <div class="container">
+            <h1>مرحباً بك في موقعي</h1>
+            
+            <div class="welcome-text">
+                <p>🎉 أهلاً وسهلاً! نورت الموقع 🎉</p>
+            </div>
+            
+            <div class="content-box">
+                <div class="content-text">
+                    <p>✨ مرحباً بك في تجربة رائعة ومميزة</p>
+                    <p>📱 الموقع يعمل على جميع الأجهزة بسلاسة</p>
+                    <p>🚀 تصميم متجاوب وعصري</p>
+                    <p>🎬 الانترو اكتمل بنجاح!</p>
+                </div>
+                
+                <button class="button" onclick="showMessage()">
+                    🎯 اضغط للتجربة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // متغيرات عامة
+        let videoLoaded = false;
+        let userInteracted = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const introScreen = document.getElementById('intro-screen');
+            const introVideo = document.getElementById('intro-video');
+            const mainSite = document.getElementById('main-site');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            // تحسين الأداء للموبايل
+            if (isMobile()) {
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
+                document.body.style.height = '100%';
+            }
+            
+            // إعدادات الفيديو المتقدمة
+            setupVideo();
+            
+            // بدء تحميل الفيديو
+            introVideo.load();
+            
+            // عند تحميل الفيديو بالكامل
+            introVideo.addEventListener('canplaythrough', function() {
+                console.log('الفيديو جاهز للتشغيل');
+                videoLoaded = true;
+                hideLoading();
+                attemptAutoplay();
+            });
+            
+            // تشغيل الفيديو عند أول تفاعل
+            document.addEventListener('touchstart', enableAutoplay, { once: true });
+            document.addEventListener('click', enableAutoplay, { once: true });
+            
+            // عند انتهاء الفيديو
+            introVideo.addEventListener('ended', function() {
+                console.log('انتهى الفيديو');
+                showMainSite();
+            });
+            
+            // معالجة الأخطاء
+            introVideo.addEventListener('error', function(e) {
+                console.log('خطأ في الفيديو:', e);
+                showMainSite();
+            });
+            
+            // Timeout للأمان (إذا لم يحمل الفيديو خلال 10 ثواني)
+            setTimeout(function() {
+                if (!videoLoaded) {
+                    console.log('انتهت مهلة التحميل');
+                    showMainSite();
+                }
+            }, 10000);
+            
+            // وظائف مساعدة
+            function setupVideo() {
+                // تحسينات خاصة بـ iOS
+                if (isIOS()) {
+                    introVideo.setAttribute('playsinline', 'true');
+                    introVideo.setAttribute('webkit-playsinline', 'true');
+                }
+                
+                // تحسينات خاصة بـ Android
+                if (isAndroid()) {
+                    introVideo.setAttribute('x5-playsinline', 'true');
+                    introVideo.setAttribute('x5-video-player-type', 'h5');
+                }
+                
+                // منع الضغط والسحب
+                introVideo.addEventListener('contextmenu', preventDefault);
+                introVideo.addEventListener('dragstart', preventDefault);
+                introVideo.addEventListener('selectstart', preventDefault);
+            }
+            
+            function hideLoading() {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(function() {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }
+            
+            function attemptAutoplay() {
+                if (videoLoaded) {
+                    introVideo.play().then(function() {
+                        console.log('تم تشغيل الفيديو تلقائياً');
+                    }).catch(function(error) {
+                        console.log('فشل التشغيل التلقائي:', error);
+                        // إظهار رسالة تطلب من المستخدم الضغط
+                        showPlayPrompt();
+                    });
+                }
+            }
+            
+            function enableAutoplay() {
+                userInteracted = true;
+                if (videoLoaded && introVideo.paused) {
+                    introVideo.play();
+                }
+            }
+            
+            function showPlayPrompt() {
+                const prompt = document.createElement('div');
+                prompt.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 15px;
+                    text-align: center;
+                    z-index: 10001;
+                    font-size: 1.2rem;
+                    cursor: pointer;
+                    animation: pulse 2s infinite;
+                `;
+                prompt.innerHTML = '🎬<br>اضغط للبدء<br><span style="font-size:0.8em">Click to Start</span>';
+                prompt.onclick = function() {
+                    introVideo.play();
+                    prompt.remove();
+                };
+                introScreen.appendChild(prompt);
+            }
+            
+            function showMainSite() {
+                // تحرير الـ body للسكرول
+                document.body.style.position = '';
+                document.body.style.overflow = 'auto';
+                
+                // إخفاء شاشة الانترو
+                introScreen.classList.add('fade-out');
+                
+                // إظهار الموقع الأساسي
+                setTimeout(function() {
+                    mainSite.classList.add('show');
+                    
+                    // تنظيف DOM
+                    setTimeout(function() {
+                        introScreen.style.display = 'none';
+                        if (introVideo) {
+                            introVideo.pause();
+                            introVideo.src = '';
+                        }
+                    }, 1500);
+                }, 500);
+            }
+            
+            function preventDefault(e) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // منع اختصارات لوحة المفاتيح
+            document.addEventListener('keydown', function(e) {
+                if (!mainSite.classList.contains('show')) {
+                    const blockedKeys = ['Space', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+                    if (blockedKeys.includes(e.code) || (e.ctrlKey && e.key === 's')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        });
+        
+        // وظائف كشف نوع الجهاز
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent);
+        }
+        
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        }
+        
+        // وظيفة الزر التفاعلي
+        function showMessage() {
+            const messages = [
+                '🎉 رائع! الموقع يعمل بشكل مثالي',
+                '✨ مرحباً بك في التجربة الجديدة',
+                '🚀 تصميم متجاوب وعصري',
+                '📱 يعمل على جميع الأجهزة'
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            alert(randomMessage);
+        }
+        
+        // منع zoom في iOS
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        // CSS للأنيميشن الإضافية
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: translate(-50%, -50%) scale(1); }
+                50% { transform: translate(-50%, -50%) scale(1.05); }
+                100% { transform: translate(-50%, -50%) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
